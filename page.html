@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Interactive Plot</title>
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.23.2/full/pyodide.js"></script>
+  </head>
+  <body>
+    <h2>Enter Values</h2>
+    <input type="text" id="xValues" placeholder="x values, comma separated" />
+    <input type="text" id="yValues" placeholder="y values, comma separated" />
+    <button onclick="generatePlot()">Plot</button>
+    <div id="plotArea"></div>
+
+    <script type="text/javascript">
+      async function generatePlot() {
+        let pyodide = await loadPyodide();
+        await pyodide.loadPackage("plotly");
+
+        const x = document.getElementById("xValues").value.split(',').map(Number);
+        const y = document.getElementById("yValues").value.split(',').map(Number);
+
+        const code = `
+import plotly.express as px
+fig = px.line(x=${JSON.stringify(x)}, y=${JSON.stringify(y)})
+fig.to_html(full_html=False, include_plotlyjs='cdn')
+        `;
+
+        const html = await pyodide.runPythonAsync(code);
+        document.getElementById("plotArea").innerHTML = html;
+      }
+    </script>
+  </body>
+</html>
