@@ -1,33 +1,49 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>Interactive Plot</title>
-    <script src="https://cdn.jsdelivr.net/pyodide/v0.23.2/full/pyodide.js"></script>
-  </head>
-  <body>
-    <h2>Enter Values</h2>
-    <input type="text" id="xValues" placeholder="x values, comma separated" />
-    <input type="text" id="yValues" placeholder="y values, comma separated" />
-    <button onclick="generatePlot()">Plot</button>
-    <div id="plotArea"></div>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Interactive Plot with Pyodide</title>
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2em; }
+    input { margin: 0.5em; width: 300px; }
+    button { padding: 0.5em 1em; }
+    #plotArea { margin-top: 2em; }
+  </style>
+</head>
+<body>
+  <h1>📈 Interactive Plotly with Python (via Pyodide)</h1>
+  <p>Enter comma-separated values:</p>
+  <input type="text" id="xValues" placeholder="x values, e.g. 1,2,3" />
+  <input type="text" id="yValues" placeholder="y values, e.g. 10,15,20" />
+  <br>
+  <button onclick="generatePlot()">Plot</button>
 
-    <script type="text/javascript">
-      async function generatePlot() {
-        let pyodide = await loadPyodide();
-        await pyodide.loadPackage("plotly");
+  <div id="plotArea"></div>
 
-        const x = document.getElementById("xValues").value.split(',').map(Number);
-        const y = document.getElementById("yValues").value.split(',').map(Number);
+  <script type="text/javascript">
+    let pyodideReady = loadPyodide();
 
-        const code = `
+    async function generatePlot() {
+      const pyodide = await pyodideReady;
+      await pyodide.loadPackage("micropip");
+      await pyodide.runPythonAsync(`
+        import micropip
+        await micropip.install("plotly")
+      `);
+
+      const x = document.getElementById("xValues").value.split(',').map(Number);
+      const y = document.getElementById("yValues").value.split(',').map(Number);
+
+      const code = `
 import plotly.express as px
-fig = px.line(x=${JSON.stringify(x)}, y=${JSON.stringify(y)})
-fig.to_html(full_html=False, include_plotlyjs='cdn')
-        `;
+fig = px.line(x=${JSON.stringify(x)}, y=${JSON.stringify(y)}, labels={"x":"X Values", "y":"Y Values"})
+fig.to_html(full_html=False, include_plotlyjs="cdn")
+      `;
 
-        const html = await pyodide.runPythonAsync(code);
-        document.getElementById("plotArea").innerHTML = html;
-      }
-    </script>
-  </body>
+      const html = await pyodide.runPythonAsync(code);
+      document.getElementById("plotArea").innerHTML = html;
+    }
+  </script>
+</body>
 </html>
