@@ -26,22 +26,33 @@
 
     async function generatePlot() {
       const pyodide = await pyodideReady;
-      await pyodide.loadPackage("micropip");
-      await pyodide.runPythonAsync(`
-        import micropip
-        await micropip.install("plotly")
-        await micropip.install("numpy")
-        await micropip.install("pandas")
-      `);
+      await pyodide.loadPackage(["numpy", "matplotlib"]);
 
       const x = document.getElementById("xValues").value.split(',').map(Number);
       const y = document.getElementById("yValues").value.split(',').map(Number);
 
+      pyodide.globals.set("x_vals", x);
+      pyodide.globals.set("y_vals", y);
+
       const code = `
-import plotly.express as px
-fig = px.line(x=${JSON.stringify(x)}, y=${JSON.stringify(y)}, labels={"x":"X Values", "y":"Y Values"})
-output_html = fig.to_html(full_html=False, include_plotlyjs="cdn")
-output_html
+import matplotlib.pyplot as plt
+import numpy as np
+from io import BytesIO
+import base64
+
+fig, ax = plt.subplots()
+ax.plot(x_vals, y_vals, marker='o')
+ax.set_xlabel("X Values")
+ax.set_ylabel("Y Values")
+ax.set_title("Matplotlib Line Plot")
+
+buf = BytesIO()
+fig.savefig(buf, format='png')
+buf.seek(0)
+img_base64 = base64.b64encode(buf.read()).decode('utf-8')
+plt.close(fig)  # Close the figure to free memory
+img_html = f'<img src="data:image/png;base64,{img_base64}" alt="Matplotlib Plot"/>'
+img_html
       `;
 
       const html = await pyodide.runPythonAsync(code);
