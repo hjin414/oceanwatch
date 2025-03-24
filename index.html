@@ -38,10 +38,12 @@
       const code = `
 import plotly.express as px
 fig = px.line(x=${JSON.stringify(x)}, y=${JSON.stringify(y)}, labels={"x":"X Values", "y":"Y Values"})
-fig.to_html(full_html=False, include_plotlyjs="cdn")
+output_html = fig.to_html(full_html=False, include_plotlyjs="cdn")
+output_html
       `;
 
       const html = await pyodide.runPythonAsync(code);
+      console.log("HTML returned from Python:", html); 
       document.getElementById("plotArea").innerHTML = html;
     }
   </script>
