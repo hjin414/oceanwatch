@@ -30,6 +30,7 @@
       await pyodide.runPythonAsync(`
         import micropip
         await micropip.install("plotly")
+        await micropip.install("numpy")
       `);
 
       const x = document.getElementById("xValues").value.split(',').map(Number);
