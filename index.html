@@ -30,9 +30,11 @@
 
       const x = document.getElementById("xValues").value.split(',').map(Number);
       const y = document.getElementById("yValues").value.split(',').map(Number);
-
-      pyodide.globals.set("x_vals", x);
-      pyodide.globals.set("y_vals", y);
+      
+      console.log("x output", x);
+      
+      pyodide.globals.set("x_vals", pyodide.toPy(x));
+      pyodide.globals.set("y_vals", pyodide.toPy(y));
 
       const code = `
 import matplotlib.pyplot as plt
